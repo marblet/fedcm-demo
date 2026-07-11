@@ -3,6 +3,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
+    "dev:local": "PORT=3001 HOSTNAME=rp.local HTTPS_CERT_FILE=../certs/rp.local.pem HTTPS_KEY_FILE=../certs/rp.local-key.pem tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js"
   },
