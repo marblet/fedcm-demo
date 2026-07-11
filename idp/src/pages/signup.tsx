@@ -1,14 +1,14 @@
-type LoginProps = {
+type SignupProps = {
   error?: string
 }
 
-export const LoginPage = ({ error }: LoginProps) => {
+export const SignupPage = ({ error }: SignupProps) => {
   return (
     <html lang="ja">
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Login</title>
+        <title>Signup</title>
         <style>{`
           body {
             margin: 0;
@@ -66,22 +66,25 @@ export const LoginPage = ({ error }: LoginProps) => {
       </head>
       <body>
         <main>
-          <h1>Login</h1>
+          <h1>Signup</h1>
           {error ? <p class="error">{error}</p> : null}
-          <form method="post" action="/login">
+          <form method="post" action="/signup">
             <label for="id">ID</label>
             <input id="id" name="id" type="text" autocomplete="username" required />
 
-            <label for="password">Pass</label>
+            <label for="password">Password</label>
             <input
               id="password"
               name="password"
               type="password"
-              autocomplete="current-password"
+              autocomplete="new-password"
               required
             />
 
-            <button type="submit">Login</button>
+            <label for="name">ユーザ名</label>
+            <input id="name" name="name" type="text" autocomplete="name" required />
+
+            <button type="submit">Create</button>
           </form>
         </main>
       </body>
