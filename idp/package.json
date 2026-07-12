@@ -4,6 +4,7 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "dev:local": "PORT=3000 HOSTNAME=idp.local HTTPS_CERT_FILE=../certs/idp.local.pem HTTPS_KEY_FILE=../certs/idp.local-key.pem tsx watch src/index.ts",
+    "dev:443": "PORT=443 HOSTNAME=idp.local HTTPS_CERT_FILE=../certs/idp.local.pem HTTPS_KEY_FILE=../certs/idp.local-key.pem tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js"
   },

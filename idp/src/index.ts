@@ -12,13 +12,17 @@ import { handleGetSignup, handlePostSignup } from "./routes/signup.js";
 import { handleGetSignupSuccess } from "./routes/signupSuccess.js";
 import { handleGetTop } from "./routes/top.js";
 import { handleGetWellKnownWebIdentity } from "./routes/wellKnownWebIdentity.js";
+import { handleGetAccounts } from "./routes/accounts.js";
+import { handlePostAssertion } from "./routes/assertion.js";
+import { logger } from "hono/logger";
 
 const app = new Hono();
-const port = Number(process.env.PORT ?? 3000);
+export const port = Number(process.env.PORT ?? 3000);
 const hostname = process.env.HOSTNAME ?? "idp.local";
 const certFile = process.env.HTTPS_CERT_FILE;
 const keyFile = process.env.HTTPS_KEY_FILE;
 
+app.use("*", logger());
 app.get("/", handleGetTop);
 app.get("/login", handleGetLogin);
 app.post("/login", handlePostLogin);
@@ -30,7 +34,9 @@ app.post("/select_account", handlePostSelectAccount);
 
 // FedCM
 app.get("/.well-known/web-identity", handleGetWellKnownWebIdentity);
-app.get("/config", handleGetConfig);
+app.get("/config.json", handleGetConfig);
+app.get("/accounts", handleGetAccounts);
+app.post("/assertion", handlePostAssertion);
 
 serve(
   {

@@ -42,6 +42,10 @@ export class Session {
     ];
     repository.save(this);
   }
+
+  isLoggedInAs(userId: string) {
+    return this.users.some((user) => user.id === userId);
+  }
 }
 
 export interface SessionRepository {

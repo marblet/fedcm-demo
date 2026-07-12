@@ -15,6 +15,7 @@ export const setSessionCookie = (c: Context, sessionId: string): void => {
     httpOnly: true,
     maxAge: sessionMaxAgeSeconds,
     path: "/",
-    sameSite: "Lax",
+    sameSite: "None",
+    secure: true,
   });
 };
