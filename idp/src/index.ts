@@ -2,6 +2,7 @@ import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { readFileSync } from "node:fs";
 import { createServer } from "node:https";
+import { handleGetConfig } from "./routes/config.js";
 import { handleGetLogin, handlePostLogin } from "./routes/login.js";
 import {
   handleGetSelectAccount,
@@ -10,6 +11,7 @@ import {
 import { handleGetSignup, handlePostSignup } from "./routes/signup.js";
 import { handleGetSignupSuccess } from "./routes/signupSuccess.js";
 import { handleGetTop } from "./routes/top.js";
+import { handleGetWellKnownWebIdentity } from "./routes/wellKnownWebIdentity.js";
 
 const app = new Hono();
 const port = Number(process.env.PORT ?? 3000);
@@ -25,6 +27,10 @@ app.post("/signup", handlePostSignup);
 app.get("/signup/success", handleGetSignupSuccess);
 app.get("/select_account", handleGetSelectAccount);
 app.post("/select_account", handlePostSelectAccount);
+
+// FedCM
+app.get("/.well-known/web-identity", handleGetWellKnownWebIdentity);
+app.get("/config", handleGetConfig);
 
 serve(
   {

@@ -1,40 +1,32 @@
 import type { Context } from "hono";
-import { getCookie } from "hono/cookie";
 import { renderToString } from "hono/jsx/dom/server";
 import { SelectAccountPage } from "../pages/selectAccount.js";
-import { getSessionUserIds, updateSession } from "../repository/sessions.js";
-import { getUser } from "../repository/users.js";
-
-const sessionCookieName = "session";
-
-const getSessionId = (c: Context): string | undefined => {
-  return getCookie(c, sessionCookieName);
-};
+import { sessionRepository } from "../repository/sessions.js";
+import { getSessionCookie } from "../http/cookies.js";
 
 const getAccounts = (sessionId: string | undefined) => {
-  const userIds = sessionId ? getSessionUserIds(sessionId) : undefined;
+  const session = sessionId ? sessionRepository.get(sessionId) : undefined;
 
-  if (!userIds) {
+  if (!session) {
     return [];
   }
 
-  return userIds.flatMap((userId) => {
-    const user = getUser(userId);
-    return user ? [{ id: user.id, name: user.name }] : [];
-  });
+  return session.users.map((user) => ({ id: user.id, name: user.name }));
 };
 
 export const handleGetSelectAccount = (c: Context) => {
   return c.html(
-    renderToString(SelectAccountPage({ accounts: getAccounts(getSessionId(c)) })),
+    renderToString(
+      SelectAccountPage({ accounts: getAccounts(getSessionCookie(c)) }),
+    ),
   );
 };
 
 export const handlePostSelectAccount = async (c: Context) => {
-  const sessionId = getSessionId(c);
-  const userIds = sessionId ? getSessionUserIds(sessionId) : undefined;
+  const sessionId = getSessionCookie(c);
+  const session = sessionId ? sessionRepository.get(sessionId) : undefined;
 
-  if (!sessionId || !userIds) {
+  if (!session) {
     return c.html(
       renderToString(
         SelectAccountPage({
@@ -48,8 +40,9 @@ export const handlePostSelectAccount = async (c: Context) => {
 
   const body = await c.req.parseBody();
   const userId = String(body.userId ?? "");
+  const user = session.users.find((sessionUser) => sessionUser.id === userId);
 
-  if (!userIds.includes(userId)) {
+  if (!user) {
     return c.html(
       renderToString(
         SelectAccountPage({
@@ -61,7 +54,6 @@ export const handlePostSelectAccount = async (c: Context) => {
     );
   }
 
-  updateSession(sessionId, [userId, ...userIds.filter((id) => id !== userId)]);
-
+  session.selectActiveUser(user, sessionRepository);
   return c.redirect("/select_account");
 };

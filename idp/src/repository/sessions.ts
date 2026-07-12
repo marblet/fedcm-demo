@@ -1,43 +1,21 @@
-import { randomInt } from "node:crypto";
+import { type SessionRepository, Session } from "../domain/session.js";
 
-const sessions = new Map<string, string[]>();
-const sessionChars =
-  "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+const sessions = new Map<string, Session>();
 
-const generateSessionId = (): string => {
-  let session = "";
-
-  for (let i = 0; i < 20; i += 1) {
-    session += sessionChars[randomInt(sessionChars.length)];
-  }
-
-  return session;
+const getSession = (sessionId: string): Session | undefined => {
+  return sessions.get(sessionId);
 };
 
-const generateUniqueSessionId = (): string => {
-  let session = generateSessionId();
-
-  while (getSessionUserIds(session)) {
-    session = generateSessionId();
-  }
-
-  return session;
+const saveSession = (session: Session): void => {
+  sessions.set(session.id, session);
 };
 
-export const getSessionUserIds = (session: string): string[] | undefined => {
-  return sessions.get(session);
+const deleteSession = (sessionId: string): void => {
+  sessions.delete(sessionId);
 };
 
-export const generateSession = (userIds: string[]): string => {
-  const sessionId = generateUniqueSessionId();
-  sessions.set(sessionId, userIds);
-  return sessionId;
-};
-
-export const updateSession = (session: string, userIds: string[]): void => {
-  sessions.set(session, userIds);
-};
-
-export const deleteSession = (session: string): void => {
-  sessions.delete(session);
+export const sessionRepository: SessionRepository = {
+  get: getSession,
+  save: saveSession,
+  delete: deleteSession,
 };
