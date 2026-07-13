@@ -1,18 +1,9 @@
 import type { Context } from "hono";
 import { getSessionCookie } from "../http/cookies.js";
 import { sessionRepository } from "../repository/sessions.js";
-
-const allowedRpOrigin = "https://rp.local:3001";
+import { clientRepository } from "../repository/client.js";
 
 export const handlePostAssertion = async (c: Context) => {
-  // CORS（クロスオリジン リソース シェアリング）でリクエストに応答
-  const origin = c.req.header("Origin");
-  if (origin === allowedRpOrigin) {
-    c.header("Access-Control-Allow-Origin", origin);
-    c.header("Access-Control-Allow-Credentials", "true");
-    c.header("Vary", "Origin");
-  }
-
   const contentType = c.req.header("Content-Type");
   if (contentType !== "application/x-www-form-urlencoded") {
     return c.json(
@@ -32,19 +23,20 @@ export const handlePostAssertion = async (c: Context) => {
           message: "Sec-Fetch-Dest is not webidentity",
         },
       },
-      400,
+      403,
     );
   }
 
   // Origin ヘッダーを client_id によって決定された RP オリジンと照合。一致しない場合は不承認。
   const clientId = requestBody["client_id"];
-  if (!clientId) {
+  if (typeof clientId !== "string") {
     return c.json(
       { error: { code: "invalid_request", message: "client_id is required" } },
       400,
     );
   }
-  if (clientId !== "1234") {
+  const client = clientRepository.get(clientId);
+  if (!client) {
     return c.json(
       {
         error: { code: "invalid_request", message: "client_id does not match" },
@@ -52,7 +44,8 @@ export const handlePostAssertion = async (c: Context) => {
       400,
     );
   }
-  if (origin !== allowedRpOrigin) {
+  const origin = c.req.header("Origin");
+  if (typeof origin !== "string" || !client.origins.includes(origin)) {
     return c.json(
       {
         error: {
@@ -63,6 +56,10 @@ export const handlePostAssertion = async (c: Context) => {
       400,
     );
   }
+  // CORS（クロスオリジン リソース シェアリング）でリクエストに応答
+  c.header("Access-Control-Allow-Origin", origin);
+  c.header("Access-Control-Allow-Credentials", "true");
+  c.header("Vary", "Origin");
 
   // account_id を、すでにログインしているアカウントの ID と照合。一致しない場合は拒否。
   const sessionId = getSessionCookie(c);

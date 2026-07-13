@@ -14,6 +14,7 @@ import { handleGetTop } from "./routes/top.js";
 import { handleGetWellKnownWebIdentity } from "./routes/wellKnownWebIdentity.js";
 import { handleGetAccounts } from "./routes/accounts.js";
 import { handlePostAssertion } from "./routes/assertion.js";
+import { handleGetClientMetadata } from "./routes/clientMetadata.js";
 import { logger } from "hono/logger";
 
 const app = new Hono();
@@ -37,6 +38,7 @@ app.get("/.well-known/web-identity", handleGetWellKnownWebIdentity);
 app.get("/config.json", handleGetConfig);
 app.get("/accounts", handleGetAccounts);
 app.post("/assertion", handlePostAssertion);
+app.get("/client_metadata", handleGetClientMetadata);
 
 serve(
   {

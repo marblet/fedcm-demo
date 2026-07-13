@@ -6,7 +6,7 @@ export const handleGetAccounts = (c: Context) => {
   // リクエストに Sec-Fetch-Dest: webidentity HTTP ヘッダーが含まれていることを確認
   const secFetchDest = c.req.header("Sec-Fetch-Dest");
   if (secFetchDest !== "webidentity") {
-    return c.json({ error: "Sec-Fetch-Dest is not webidentity" }, 400);
+    return c.json({ error: "Sec-Fetch-Dest is not webidentity" }, 403);
   }
 
   // セッション Cookie を、すでにログインしているアカウントの ID と照合

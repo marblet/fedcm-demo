@@ -12,7 +12,7 @@ async function triggerFedCM() {
       providers: [
         {
           configURL: "https://idp.local/config.json",
-          clientId: "1234",
+          clientId: "client-1",
         },
       ],
     },
