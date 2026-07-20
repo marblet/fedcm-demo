@@ -1,4 +1,6 @@
 import type { Context } from "hono";
+import { Jwt } from "hono/utils/jwt";
+import { privateKey } from "../index.js";
 import { getSessionCookie } from "../http/cookies.js";
 import { sessionRepository } from "../repository/sessions.js";
 import { clientRepository } from "../repository/client.js";
@@ -88,12 +90,24 @@ export const handlePostAssertion = async (c: Context) => {
       403,
     );
   }
+  // ID Tokenを生成
+  const currentTime = Math.floor(Date.now() / 1000);
+  const idToken = await Jwt.sign(
+    {
+      iss: "https://idp.local",
+      sub: accountId,
+      aud: clientId,
+      exp: currentTime + 3600, // 1時間有効
+      iat: currentTime,
+    },
+    privateKey.export({ format: "jwk" }),
+    "ES256",
+  );
 
   // トークンで応答。リクエストが拒否された場合は、エラーレスポンスで応答。
   return c.json({
     token: {
-      access_token: "dummy_token",
-      user_info: {},
+      id_token: idToken,
     },
   });
 };

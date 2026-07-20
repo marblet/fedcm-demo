@@ -1,5 +1,7 @@
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
+import { logger } from "hono/logger";
+import { generateKeyPairSync } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { createServer } from "node:https";
 import { handleGetConfig } from "./routes/config.js";
@@ -15,13 +17,18 @@ import { handleGetWellKnownWebIdentity } from "./routes/wellKnownWebIdentity.js"
 import { handleGetAccounts } from "./routes/accounts.js";
 import { handlePostAssertion } from "./routes/assertion.js";
 import { handleGetClientMetadata } from "./routes/clientMetadata.js";
-import { logger } from "hono/logger";
+import { handleGetJwks } from "./routes/jwks.js";
 
 const app = new Hono();
 export const port = Number(process.env.PORT ?? 3000);
 const hostname = process.env.HOSTNAME ?? "idp.local";
 const certFile = process.env.HTTPS_CERT_FILE;
 const keyFile = process.env.HTTPS_KEY_FILE;
+
+// ID Token の署名に使用する公開鍵と秘密鍵を生成
+export const { publicKey, privateKey } = generateKeyPairSync("ec", {
+  namedCurve: "P-256",
+});
 
 app.use("*", logger());
 app.get("/", handleGetTop);
@@ -39,6 +46,9 @@ app.get("/config.json", handleGetConfig);
 app.get("/accounts", handleGetAccounts);
 app.post("/assertion", handlePostAssertion);
 app.get("/client_metadata", handleGetClientMetadata);
+
+// ID Token
+app.get("/jwks", handleGetJwks);
 
 serve(
   {
